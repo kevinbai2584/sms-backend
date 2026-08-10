@@ -1,0 +1,68 @@
+package net.javaguides.sms.service.impl;
+
+
+import lombok.AllArgsConstructor;
+import net.javaguides.sms.dto.StudentDto;
+import net.javaguides.sms.entity.Student;
+import net.javaguides.sms.exception.ResourceNotFoundException;
+import net.javaguides.sms.mapper.StudentMapper;
+import net.javaguides.sms.repository.StudentRepository;
+import net.javaguides.sms.service.StudentService;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.stream.Collectors;
+
+@Service
+@AllArgsConstructor
+public class StudentServiceImpl implements StudentService {
+    private final StudentRepository studentRepository;
+    @Override
+    public StudentDto createStudent(StudentDto studentDto) {
+        Student student = StudentMapper.mapToStudent(studentDto);
+        Student savedStudent = studentRepository.save(student);
+        return StudentMapper.mapToStudentDto(savedStudent);
+    }
+
+    @Override
+    public StudentDto getStudentById(Long StudentId) {
+
+        Student student = studentRepository.findById(StudentId)
+                .orElseThrow(()->
+                        new ResourceNotFoundException("Student is not exist with given id: "+ StudentId));
+
+
+        return StudentMapper.mapToStudentDto(student);
+    }
+
+    @Override
+    public List<StudentDto> getAllStudents() {
+        List <Student> students = studentRepository.findAll();
+        return students.stream().map((student)-> StudentMapper.mapToStudentDto(student))
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public StudentDto updateStudent(Long StudentId, StudentDto updatedStudent) {
+        Student student = studentRepository.findById(StudentId).orElseThrow(()->
+                new ResourceNotFoundException("Student is not exist with given id: " + StudentId)
+                );
+        student.setEmail(updatedStudent.getEmail());
+        student.setFirstName(updatedStudent.getFirstName());
+        student.setLastName(updatedStudent.getLastName());
+
+        Student updatedStudentObj = studentRepository.save(student);
+
+        return StudentMapper.mapToStudentDto(updatedStudentObj);
+    }
+
+    @Override
+    public void deleteStudent(Long studentId) {
+        Student student = studentRepository.findById(studentId).orElseThrow(()->
+                new ResourceNotFoundException("Student is not exist with given id: " + studentId)
+        );
+        studentRepository.deleteById(studentId);
+    }
+
+
+}
