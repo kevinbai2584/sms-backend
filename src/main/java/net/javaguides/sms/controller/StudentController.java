@@ -2,12 +2,15 @@ package net.javaguides.sms.controller;
 
 import lombok.AllArgsConstructor;
 import net.javaguides.sms.dto.StudentDto;
+import net.javaguides.sms.entity.Student;
 import net.javaguides.sms.service.StudentService;
+import org.antlr.v4.runtime.misc.NotNull;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Objects;
 
 @AllArgsConstructor
 @RestController
@@ -28,15 +31,35 @@ public class StudentController {
         StudentDto studentDto = studentService.getStudentById(studentId);
         return ResponseEntity.ok(studentDto);
     }
-    // Build Get All Students REST API
+
 
     @GetMapping
+    public ResponseEntity<List<StudentDto>> getSortedStudents(@RequestParam(defaultValue = "lastName", required = false) String sort){
+        List<StudentDto> studentsDto = studentService.getAllStudents();
+        if(sort.equals("lastName")) {
+            studentsDto.sort((u1, u2) -> u1.getLastName().compareTo(u2.getLastName()));
+        } else if (sort.equals("firstName")) {
+            studentsDto.sort((u1, u2) -> u1.getFirstName().compareTo(u2.getFirstName()));
 
-    public ResponseEntity<List<StudentDto>> getAllStudents(){
+        } else if (sort.equals("email")) {
+            studentsDto.sort((u1, u2) -> u1.getEmail().compareTo(u2.getEmail()));
+        }
 
-        List<StudentDto> students = studentService.getAllStudents();
-        return ResponseEntity.ok(students);
+        return ResponseEntity.ok(studentsDto);
     }
+
+
+
+
+    // Build Get All Students REST API
+
+//    @GetMapping
+//
+//    public ResponseEntity<List<StudentDto>> getAllStudents(){
+//
+//        List<StudentDto> students = studentService.getAllStudents();
+//        return ResponseEntity.ok(students);
+//    }
 
     //Build Updated Student REST API
     @PutMapping("{id}")
